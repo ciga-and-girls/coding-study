@@ -63,7 +63,9 @@ public class PGM_72413 {
       return this.totalWeight - o.totalWeight;
     }
   }
-  static int[] distfromS;
+  static int[] distFromS;
+  static int[] distToA;
+  static int[] distToB;
   //
   static int minCost;
   public static void main(String[] args) {
@@ -83,34 +85,21 @@ public class PGM_72413 {
     }
 
     // -----------------------------
-    /**
-     * 다익스트라를 통해 S -> 모든 지점으로 가는 distfromS[]를 제작해 둔다.
-     * **/
-    distfromS = dijkstra(s, n);
-    // (1)
-    int value1 = 0;
-    value1 = distfromS[a] + distfromS[b];
+    distFromS = dijkstra(s, n);
+    distToA = dijkstra(a, n);
+    distToB = dijkstra(b, n);
 
-    // (2)
-    int value2 = INF;
-    int cost1 = floyd(a, s, b, n, fares);
-    int cost2 = floyd(b, s, a, n, fares);
-    value2 = Math.min(cost1, cost2);
+    minCost = INF;
 
-    // (3)
-    int value3 = INF;
     for(int i = 1; i < n+1; i++){
-      if(i == s || i == a || i == b) continue;
-      int[] temp = dijkstra(i, n);
-      value3 = Math.min(value3, distfromS[i] +  temp[a] + temp[b]);
+      minCost = Math.min(minCost, distFromS[i] + distToA[i] + distToB[i]);
     }
 
     // -----------------------------
-    minCost = Math.min(value1, Math.min(value2, value3));
     return minCost;
   }
 
-  // 1. 일반 다익스트라
+  // 1. 다익스트라
   // 매개변수 : 출발지
   // 반환값 : dist[] 배열
   private static int[] dijkstra(int S, int n){
@@ -120,7 +109,7 @@ public class PGM_72413 {
     dist[S] = 0;
 
     // 2. 우선순위 큐 생성
-    PriorityQueue<Vertex> pq = new PriorityQueue();
+    PriorityQueue<Vertex> pq = new PriorityQueue<>();
     pq.add(new Vertex(S, 0));
 
 
@@ -138,39 +127,6 @@ public class PGM_72413 {
         }
       }
     }
-
     return dist;
-  }
-
-  // 2. 플루이드 워셜
-  // 매개변수 : 경유지, 출발지, 도착지
-  // 반환값 : dist[][] 배열
-  // adjMatrix로 변환 후 dist[][] 초기화
-  // 경유지가 K 인 경우, break하여 cost 반환
-  private static int floyd(int K, int S, int E, int n, int[][] fares){
-    int[][] dist = new int[n+1][n+1];
-    for(int i = 0; i < n+1; i++) Arrays.fill(dist[i], INF);
-    for(int i = 0; i < n+1; i++) dist[i][i] = 0;
-    for(int[] fare : fares){
-      int c = fare[0];
-      int d = fare[1];
-      int f = fare[2];
-
-      dist[c][d] = f;
-      dist[d][c] = f;
-    }
-
-    for(int k = 1; k < n+1; k++){
-      for(int i = 1; i < n+1; i++){
-        for(int j = 1; j < n+1; j++){
-          if(dist[i][j] > dist[i][k] + dist[k][j]){
-            dist[i][j] = dist[i][k] + dist[k][j];
-            if(k == K && i == S && j == E) return dist[i][j];
-          }
-        }
-      }
-    }
-
-    return INF; // 경유지를 지나쳐 출발지에서 도착지로 갈 수 없다면 MAX_VALUE
   }
 }
