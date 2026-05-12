@@ -2,13 +2,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
 /*
- *   BFS (90분 + @)
+ *   BFS (114분 + @)
  * 
- * 
+ *   AI 활용: 시간 초과 해결하기 위해 2단계(가까운 바다로 이동) 구현 부분 수정(좌표 마다 매번 거리 구하기 -> 방문하지 않은 칸에 대한 거리 한 번에 구하기)
  */
 public class Main_C_아기고래의첫항해 {
 	
@@ -57,22 +58,8 @@ public class Main_C_아기고래의첫항해 {
 		move(new int[] {r, c, d});
 		
 		while(idx < canMove) {
-			int dist = Integer.MAX_VALUE;
-			int[] pos = new int[2];
-			for(int i = 1; i <= N; i++) {
-				for(int j = 1; j <= N; j++) {
-					if(map[i][j] == 1) continue;
-					if(visited[i][j]) continue;
-					
-					int curDist = getDist(i, j);
-					if( curDist >= dist) continue;
-					
-					dist = curDist;
-					pos[0] = i;
-					pos[1] = j;
-				}
-			}
-			move(new int[] {pos[0], pos[1], result[idx-1][2]});
+			int[] pos = nextPos(result[idx-1]);
+			move(pos);
 		}
 		
 		for(int i = 0; i < idx; i++) {
@@ -111,17 +98,20 @@ public class Main_C_아기고래의첫항해 {
 		}
 	}
 	
-	private static int getDist(int sr, int sc) {
+	private static int[] nextPos(int[] start) {
 		Queue<int[]> queue = new ArrayDeque<>();
-		queue.add(new int[] {result[idx-1][0], result[idx-1][1], 0});
+		queue.add(new int[] {start[0], start[1], start[2], 0});
+		
+		int[][] dist = new int[N+1][N+1];
+		for(int i = 1; i <= N; i++) Arrays.fill(dist[i], Integer.MAX_VALUE);
 		
 		boolean[][] moved = new boolean[N+1][N+1];
-		moved[sr][sc] = true;
+		moved[start[0]][start[1]] = true;
 		
+		int minDist = Integer.MAX_VALUE;
+		int[] pos = new int[3];
 		while(!queue.isEmpty()) {
 			int[] cur = queue.poll();
-			
-			if(cur[0] == sr && cur[1] == sc) return cur[2];
 			
 			for(int dir = 0; dir < 4; dir++) {
 				int nr = cur[0] + dr[order[0][dir]];
@@ -132,11 +122,23 @@ public class Main_C_아기고래의첫항해 {
 				if(moved[nr][nc]) continue;
 				
 				moved[nr][nc] = true;
-				queue.add(new int[] {nr, nc, cur[2]+1});
+				queue.add(new int[] {nr, nc, order[0][dir], cur[3] + 1});
+				
+				if(visited[nr][nc]) continue;
+				
+				dist[nr][nc] = cur[3] + 1;
+				if(dist[nr][nc] > minDist) continue;
+				else if(dist[nr][nc] == minDist && pos[0] < nr) continue;
+				else if(dist[nr][nc] == minDist && pos[0] == nr && pos[1] < nc) continue;
+				
+				minDist = dist[nr][nc];
+				pos[0] = nr;
+				pos[1] = nc;
+				pos[2] = order[0][dir];
 			}
 		}
 		
-		return Integer.MAX_VALUE;
+		return pos;
 	}
 
 }
