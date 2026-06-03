@@ -2,14 +2,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
 /*
- * 	시뮬레이션 (76분)
+ * 	시뮬레이션 (76+@분)
  * 
  * 	칸: 고정된 위치
  * 	판: 초기의 칸의 번호, 회전할 때마다 이동
+ * 
+ *  AI 활용: 시간 초과 원인 파악 -> 회전해서 n번째 칸에 도착한 사람을 바로 내리지 않아서 queue에 남아있음
  */
 public class Main_불안한무빙워크 {
 
@@ -49,7 +52,6 @@ public class Main_불안한무빙워크 {
 		while (cnt < k) {
 			
 			result++;
-			System.out.println(result + "번째 실험");
 			
 			// 1. 무빙워크 한 칸 회전
 			cur1 = (2*n + cur1-1) % (2*n);
@@ -61,10 +63,9 @@ public class Main_불안한무빙워크 {
 			if(!used[cur1] && stability[cur1] != 0) {
 				queue.add(cur1);
 				used[cur1] = true;
+				if(--stability[cur1] == 0) cnt++;
 				people++;
 			}
-			System.out.println("사람 수: " + people);
-			
 		}
 		
 		System.out.println(result);
@@ -75,7 +76,15 @@ public class Main_불안한무빙워크 {
 		
 		while(p-- > 0) {  // 무빙워크에 있는 사람 수만큼 반복
 			
-			int cur = queue.poll();  // 사람이 있는 판의 번호		
+			int cur = queue.poll();  // 사람이 있는 판의 번호
+			
+			// 회전 직후 내려야 하는 사람
+			if(cur == (cur1 + n-1) % (2*n)) {
+				used[cur] = false;
+				people--;
+				continue;
+			}
+			
 			int next = (cur + 1) % (2 * n);  // 앞선 칸의 판의 번호
 			
 			// 이동 불가능: 앞선 칸에 사람이 이미 있거나 앞선 칸의 안정성이 0인 경우
@@ -86,12 +95,11 @@ public class Main_불안한무빙워크 {
 			
 			// 이동 가능
 			used[cur] = false;
-			if(next == cur1 + n-1) people--;
+			if(--stability[next] == 0) cnt++;
+			if(next == (cur1 + n-1) % (2*n)) people--;
 			else {
 				queue.add(next);
 				used[next] = true;
-				if(--stability[next] == 0) cnt++;
-				System.out.println("안정성이 0인 판의 수: " + cnt);
 			}
 			
 		}
