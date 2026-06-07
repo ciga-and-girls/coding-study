@@ -1,4 +1,4 @@
-package kyungrin.unsolved;
+package kyungrin.solved;
 
 /** 몇 번째 실험?
  * 무빙워크 :
@@ -78,9 +78,13 @@ public class CT_UnstableMovingWalk {
     stopBoxIdx = N-1; // 무빙워크의 칸 위치는 0-BASED
 
     movingWorkBoards = new int[N*2];
+    int num = 1;
+    for(int i = 0; i < N*2; i++){
+      movingWorkBoards[i] = num++;
+    }
     boardSafety = new int[N*2+1];
     st = new StringTokenizer(br.readLine());
-    for(int i = 1; i <= N; i++) {
+    for(int i = 1; i <= N*2; i++) {
       boardSafety[i] = Integer.parseInt(st.nextToken());
     }
 
@@ -98,35 +102,45 @@ public class CT_UnstableMovingWalk {
       movingPerson();
 
       // 3. 1번 칸에 사람 올리기
-      if(boardSafety[1] != 0 && !isPersonHere[1]) {
-        boardSafety[1]--;
-        isPersonHere[1] = true;
-        pq.add(new Person(lastPersonNum + 1, 1));
+      // AI 사용 : 1번 칸에 있는 판의 안전성을 찾아야 한다
+      int boardNum = movingWorkBoards[0];
+      if(boardSafety[boardNum] != 0 && !isPersonHere[boardNum]) {
+        boardSafety[boardNum]--;
+        isPersonHere[boardNum] = true;
+        // AI 사용 : 변수의 값을 갱신하지 않음
+        lastPersonNum++;
+        pq.add(new Person(lastPersonNum, boardNum));
       }
 
       // 4. 안전성이 0이 된 칸이 있는지 확인
       int tempCnt = 0;
-      for(int i = 1; i <= N; i++) {
+      // AI 사용 : 개수ㅠ 2*N
+      for(int i = 1; i <= 2*N; i++) {
         if(boardSafety[i] == 0) tempCnt++;
       }
       safeZeroCnt = tempCnt;
       rotationCnt++;
 
-      if (safeZeroCnt == K) break;
+      if (safeZeroCnt >= K) break;
     }
 
     System.out.println(rotationCnt);
-
   }
 
   // 무빙워크 : 시계방향으로 Shifting 하는 기능을 가진다.
   // movingWorkBoards 요소를 오른쪽으로 이동
   private static void movingWork() {
-    int temp = movingWorkBoards[N-1];
-    for(int i = N-2; i >= 1; i--){
+    // AI 사용 : 컨테이너의 길이
+    int temp = movingWorkBoards[N*2-1];
+    for(int i = N*2-1; i >= 1; i--){
       movingWorkBoards[i] = movingWorkBoards[i-1];
     }
     movingWorkBoards[0] = temp;
+
+    int boardNum = movingWorkBoards[N-1];
+    if(isStopBox(boardNum)){
+      isPersonHere[boardNum] = false;
+    }
   }
 
   // 사람의 이동 : 옆 판으로 이동한다.
@@ -136,13 +150,19 @@ public class CT_UnstableMovingWalk {
 
     while(!pq.isEmpty()) {
       Person person = pq.poll();
-      int nextBoardNum = (person.boardNum + 1) % N;
+
+      // AI : 이미 내린 사람인지 확인하기(무빙워크로 이동하기에서 처리하지 않았기 때문에)
+      if (!isPersonHere[person.boardNum]) continue;
+
+      int nextBoardNum = person.boardNum % (2*N) + 1;
 
       if (boardSafety[nextBoardNum] != 0 && !isPersonHere[nextBoardNum]) {
-        if(isStopBox(nextBoardNum)) continue;
-
+        // AI 사용 : 내구도는 바로 깎여야 한다.
         boardSafety[nextBoardNum]--;
         isPersonHere[person.boardNum] = false;
+
+        if(isStopBox(nextBoardNum)) continue;
+
         isPersonHere[nextBoardNum] = true;
         tempPQ.add(new Person(person.personNum, nextBoardNum));
       } else {
@@ -153,14 +173,12 @@ public class CT_UnstableMovingWalk {
     pq = tempPQ;
   }
 
-  private static boolean isStopBox(int nextBoardNum) {
+  private static boolean isStopBox(int boardNum) {
     for(int i = 0; i < N*2; i++){
-      if(movingWorkBoards[i] == nextBoardNum) {
+      if(movingWorkBoards[i] == boardNum) {
         if (i == stopBoxIdx) return true;
       }
     }
     return false;
   }
-
-
 }
