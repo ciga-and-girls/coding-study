@@ -5,7 +5,7 @@ def solution(players, m, k):
     
     for h in range(24):
         need = players[h] // m
-        live_server = -= servers[h]
+        live_server -= servers[h]
                 
         if live_server < need:
             servers[h + k] += need-live_server
