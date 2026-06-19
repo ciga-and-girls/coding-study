@@ -1,4 +1,4 @@
-package kyungrin.unsolved;
+package kyungrin.solved;
 
 public class PGM_60059 {
   static int Nsize;
