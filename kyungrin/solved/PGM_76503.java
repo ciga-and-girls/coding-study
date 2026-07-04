@@ -1,0 +1,80 @@
+package kyungrin.solved;
+
+import java.util.ArrayList;
+
+// (1) 총 합이 0이어야 한다.
+// (2) 자식에서 부모 노드로의 가중치 이동 규칙에 따라 전원 0이 될 수 있어야 한다.
+// (3) 리프부터 루트로 타고 올라가서, 루트가 0이면 가능, 아니면 불가능
+import java.util.*;
+public class PGM_76503 {
+    static long[] A;
+    static long answer;
+    // 1. 인접리스트
+    static ArrayList<Integer>[] adjList;
+    public long solution(int[] a, int[][] edges) {
+
+        answer = 0;
+        A = new long[a.length];
+        for(int i = 0; i < a.length; i++){
+            A[i] = a[i];
+        }
+
+        adjList = new ArrayList[a.length];
+        for(int i = 0; i < a.length; i++){
+            adjList[i] = new ArrayList<>();
+        }
+        for(int[] nodes : edges){
+            int b = nodes[0];
+            int c = nodes[1];
+            adjList[b].add(c);
+            adjList[c].add(b);
+        }
+
+        // (1)
+        long sum = 0;
+        for(long v : A){
+            sum += v;
+        }
+        if(sum != 0) return -1;
+
+        // 2. 자식 노드에서 부모 노드로 수치 옮기기
+
+        // 자식 노드의 부모 노드 기록
+        int[] parent = new int[a.length];
+        Arrays.fill(parent, -1);
+
+        // 부모 -> 자식 순의 순서 기록
+        ArrayList<Integer> order = new ArrayList<>();
+
+        // 0 번 노드는 항상 루트로 가정
+        Stack<Integer> stk = new Stack<>();
+        stk.push(0);
+        parent[0] = 0;
+
+        // stk을 이용하여 순서 기록하기
+        while(!stk.isEmpty()){
+            int now = stk.pop();
+            order.add(now);
+
+            for(int next : adjList[now]){
+                if (parent[next] != -1) continue;
+
+                parent[next] = now;
+                stk.push(next);
+            }
+        }
+
+        // 자식 -> 부모 순서대로 가중치 옮기기
+        for(int i = order.size() -1; i > 0; i--){
+            int now = order.get(i);
+            int p = parent[now];
+
+            // 이동 횟수 체크
+            answer += Math.abs(A[now]);
+            A[p] += A[now];
+        }
+
+        return answer;
+    }
+
+}
