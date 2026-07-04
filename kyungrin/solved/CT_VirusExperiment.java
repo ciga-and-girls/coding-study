@@ -1,10 +1,9 @@
-package kyungrin.unsolved;
+package kyungrin.solved;
 
 import java.util.*;
 import java.io.*;
 
 public class CT_VirusExperiment {
-
   /**
    * n×n 격자 무늬의 배지
    * <p>
@@ -34,7 +33,6 @@ public class CT_VirusExperiment {
    * 양분 MAP에서 나이만큼 제거, 나이+1 2. ArrayList에서 꺼내서 나이 / 2 해서 양분 Map에 더함 3. 바이러스를 꺼내서, 5배수 바이러스 있는지 확인 ->
    * 8방 좌표로 바이러스 생성해서 넣기 4. MAP에 양분 더하기
    **/
-
   static int N;
   static int M;
   static int K;
@@ -82,50 +80,30 @@ public class CT_VirusExperiment {
     }
 
     for (int q = 0; q < K; q++) {
-      // 1. 하...여기서 꼬임
+      // 1.
       // 바이러스 위치를 저장해놓는 걸로 해당 작업을 줄일 수 있을 거 같음.
-      ArrayList<int[]> delete = new ArrayList<>();
       ArrayList<int[]> five = new ArrayList<>();
       for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-
-          int len = virus[i][j].size();
-          for (int k = 0; k < len; k++) {
-            int age = virus[i][j].get(k);
-            if (age > map[i][j]) {
-              delete.add(new int[]{i, j, age, k});
+          ArrayList<Integer> alive = new ArrayList<>();
+          int diedNutrient = 0;
+          for (int age : virus[i][j]) {
+            if (age <= map[i][j]) {
+              map[i][j] -= age;
+              alive.add(age + 1);
+              if ((age + 1) % 5 == 0) {
+                five.add(new int[]{i, j});
+              }
+            } else {
+              diedNutrient += age / 2;
             }
           }
 
-          for (int[] dieVirus : delete) {
-            int r = dieVirus[0];
-            int c = dieVirus[1];
-            int idx = dieVirus[3];
-
-            virus[r][c].remove(idx);
-          }
-
-          len = virus[i][j].size();
-          for (int k = 0; k < len; k++) {
-            int age = virus[i][j].get(k);
-            virus[i][j].remove(k);
-            virus[i][j].add(age + 1);
-            map[i][j] -= age;
-            if ((age + 1) % 5 == 0) {
-              five.add(new int[]{i, j});
-            }
-          }
+          // 2.
+          // ArrayList에서 꺼내서 나이 / 2 해서 양분 Map에 더함
+          map[i][j] += diedNutrient;
+          virus[i][j] = alive;
         }
-      }
-
-      // 2.
-      // ArrayList에서 꺼내서 나이 / 2 해서 양분 Map에 더함
-      for (int[] dieVirus : delete) {
-        int r = dieVirus[0];
-        int c = dieVirus[1];
-        int age = dieVirus[2];
-
-        map[r][c] += age / 2;
       }
 
       // 3.
@@ -164,5 +142,4 @@ public class CT_VirusExperiment {
 
     System.out.println(virusCnt);
   }
-
 }
